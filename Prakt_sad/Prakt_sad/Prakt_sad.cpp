@@ -40,24 +40,19 @@ struct sp {
 	long summa;
 	struct sp* sled;
 	struct sp* pred;
-		} *spisok;
+		};
 
-struct sp2 {
-	char name[40];
-	long summa;
-	struct sp2* sled;
-		} *spisok2;
+
 
 int menu(int);
 void maxim(struct z*, int);
 void first(struct z*, int);
 void text_data(char *,char *);
 void kolvo(struct z *, int);
-void alfalist(struct z*, int);
-void vstavka(char*, int);
-void vstavka2(struct z*,char*, int);
+void alfalist(struct z*, int, struct sp**);
+void vstavka(struct z*, char*, int, struct sp**);
 void listing(struct z*, int);
-void diagram(struct z*, int);
+void diagram(struct z*, int, struct sp**);
 void countrys(struct z*, int);
 void hard_question(struct z*, int);
 void find_action(struct sp*);
@@ -67,15 +62,15 @@ void delete_element(struct sp*);
 int main(array<System::String ^> ^args)
 {
 int i,n;
-	char dan[8][60]={
-"Напиши самую дорогую акцию из сводки                   ",
-"Покажи самое старое снятие показаний                   ",
-"Все акции выбранной страны, стоимостью выше введённой  ",
-"Покажи все акции в алфавитном и обратном порядке       ",
-"Напиши количество акций введённой страны               ",
-"Диаграмма. Процентное соотношение стоимостей акций     ",
-"Покажи акции одинаковой стоимостью из разных стран     ",
-"Выход                                                  "
+	char dan[][60]={
+"РќР°РїРёС€Рё СЃР°РјСѓСЋ РґРѕСЂРѕРіСѓСЋ Р°РєС†РёСЋ РёР· СЃРІРѕРґРєРё                   ",
+"РџРѕРєР°Р¶Рё СЃР°РјРѕРµ СЃС‚Р°СЂРѕРµ СЃРЅСЏС‚РёРµ РїРѕРєР°Р·Р°РЅРёР№                   ",
+"Р’СЃРµ Р°РєС†РёРё РІС‹Р±СЂР°РЅРЅРѕР№ СЃС‚СЂР°РЅС‹, СЃС‚РѕРёРјРѕСЃС‚СЊСЋ РІС‹С€Рµ РІРІРµРґС‘РЅРЅРѕР№  ",
+"РџРѕРєР°Р¶Рё РІСЃРµ Р°РєС†РёРё РІ Р°Р»С„Р°РІРёС‚РЅРѕРј Рё РѕР±СЂР°С‚РЅРѕРј РїРѕСЂСЏРґРєРµ       ",
+"РќР°РїРёС€Рё РєРѕР»РёС‡РµСЃС‚РІРѕ Р°РєС†РёР№ РІРІРµРґС‘РЅРЅРѕР№ СЃС‚СЂР°РЅС‹               ",
+"Р”РёР°РіСЂР°РјРјР°. РџСЂРѕС†РµРЅС‚РЅРѕРµ СЃРѕРѕС‚РЅРѕС€РµРЅРёРµ СЃС‚РѕРёРјРѕСЃС‚РµР№ Р°РєС†РёР№     ",
+"РџРѕРєР°Р¶Рё Р°РєС†РёРё РѕРґРёРЅР°РєРѕРІРѕР№ СЃС‚РѕРёРјРѕСЃС‚СЊСЋ РёР· СЂР°Р·РЅС‹С… СЃС‚СЂР°РЅ     ",
+"Р’С‹С…РѕРґ                                                  "
 };
 char BlankLine[] = "                                                         ";
 	int NC;
@@ -87,7 +82,7 @@ char BlankLine[] = "                                                         ";
 		Console::BufferWidth=Console::WindowWidth+300;
 		if((in=fopen("MoskovBirzha.DAT","r"))==NULL)
 			{
-			printf("\nФайл MoskovBirzha.dat не открыт!");
+			printf("\nР¤Р°Р№Р» MoskovBirzha.dat РЅРµ РѕС‚РєСЂС‹С‚!");
 			getch(); exit(1);
 			}
 
@@ -110,6 +105,8 @@ char BlankLine[] = "                                                         ";
 			Kompany[i].data, Kompany[i].prognoz);
 
 getch();
+
+struct sp* spisok = 0;
 
 	while(1)
 {
@@ -135,27 +132,27 @@ switch(n) {
 case 1: maxim(Kompany, NC); break;
 case 2: first(Kompany, NC); break;
 case 3: listing(Kompany, NC); break;
-case 4: alfalist(Kompany, NC); break;
+case 4: alfalist(Kompany, NC, &spisok); break;
 case 5: kolvo(Kompany, NC);break;
-case 6: diagram(Kompany, NC);break;
+case 6: diagram(Kompany, NC, &spisok);break;
 case 7: hard_question(Kompany, NC);break;
 case 8: exit(0);
 }
-} // конец while(1)...
+} // РєРѕРЅРµС† while(1)...
     return 0;
 }
 
 int menu(int n)
 {
 char dan[8][60]={
-"Напиши самую дорогую акцию из сводки                   ",
-"Покажи самое старое снятие показаний                  ы ",
-"Все акции выбранной страны, стоимостью выше введённой  ",
-"Покажи все акции в алфавитном и обратном порядке       ",
-"Напиши количество акций введённой страны               ",
-"Диаграмма. Процентное соотношение стоимостей акций     ",
-"Покажи акции одинаковой стоимостью из разных стран     ",
-"Выход                                                  "
+"РќР°РїРёС€Рё СЃР°РјСѓСЋ РґРѕСЂРѕРіСѓСЋ Р°РєС†РёСЋ РёР· СЃРІРѕРґРєРё                   ",
+"РџРѕРєР°Р¶Рё СЃР°РјРѕРµ СЃС‚Р°СЂРѕРµ СЃРЅСЏС‚РёРµ РїРѕРєР°Р·Р°РЅРёР№                  С‹ ",
+"Р’СЃРµ Р°РєС†РёРё РІС‹Р±СЂР°РЅРЅРѕР№ СЃС‚СЂР°РЅС‹, СЃС‚РѕРёРјРѕСЃС‚СЊСЋ РІС‹С€Рµ РІРІРµРґС‘РЅРЅРѕР№  ",
+"РџРѕРєР°Р¶Рё РІСЃРµ Р°РєС†РёРё РІ Р°Р»С„Р°РІРёС‚РЅРѕРј Рё РѕР±СЂР°С‚РЅРѕРј РїРѕСЂСЏРґРєРµ       ",
+"РќР°РїРёС€Рё РєРѕР»РёС‡РµСЃС‚РІРѕ Р°РєС†РёР№ РІРІРµРґС‘РЅРЅРѕР№ СЃС‚СЂР°РЅС‹               ",
+"Р”РёР°РіСЂР°РјРјР°. РџСЂРѕС†РµРЅС‚РЅРѕРµ СЃРѕРѕС‚РЅРѕС€РµРЅРёРµ СЃС‚РѕРёРјРѕСЃС‚РµР№ Р°РєС†РёР№     ",
+"РџРѕРєР°Р¶Рё Р°РєС†РёРё РѕРґРёРЅР°РєРѕРІРѕР№ СЃС‚РѕРёРјРѕСЃС‚СЊСЋ РёР· СЂР°Р·РЅС‹С… СЃС‚СЂР°РЅ     ",
+"Р’С‹С…РѕРґ                                                  "
 };
 
 int y1=0,y2=n-1;
@@ -182,7 +179,7 @@ while (c!=ESC)
 		Console::CursorTop=y2+5;
 	printf("%s",dan[y2]);
 	c=getch();
-} // конец while(c!=ESC)...
+} // РєРѕРЅРµС† while(c!=ESC)...
 exit(0);
 }
 
@@ -203,10 +200,10 @@ void maxim(struct z* Kompan, int NC)
 	Console::BackgroundColor=ConsoleColor::Green;
 	Console::CursorLeft=10;
 	Console::CursorTop=15;
-	printf("Самая дорогая акция стоит %ld доллара",best.price_akcii);
+	printf("РЎР°РјР°СЏ РґРѕСЂРѕРіР°СЏ Р°РєС†РёСЏ СЃС‚РѕРёС‚ %ld РґРѕР»Р»Р°СЂР°",best.price_akcii);
 	Console::CursorLeft=10;
 	Console::CursorTop=16;
-	printf("Это акция компании %s, оценённой в %ld %s",best.name, best.price_komp, best.size1);
+	printf("Р­С‚Рѕ Р°РєС†РёСЏ РєРѕРјРїР°РЅРёРё %s, РѕС†РµРЅС‘РЅРЅРѕР№ РІ %ld %s",best.name, best.price_komp, best.size1);
 	getch();
 }
 
@@ -214,8 +211,8 @@ void maxim(struct z* Kompan, int NC)
 void text_data(char *s,char *sd)
 {
 char s0[3],month[12][9]={
-"января","февраля","марта","апреля","мая","июня",
-"июля","августа","сентября","октября","ноября","декабря"};
+"СЏРЅРІР°СЂСЏ","С„РµРІСЂР°Р»СЏ","РјР°СЂС‚Р°","Р°РїСЂРµР»СЏ","РјР°СЏ","РёСЋРЅСЏ",
+"РёСЋР»СЏ","Р°РІРіСѓСЃС‚Р°","СЃРµРЅС‚СЏР±СЂСЏ","РѕРєС‚СЏР±СЂСЏ","РЅРѕСЏР±СЂСЏ","РґРµРєР°Р±СЂСЏ"};
 strcpy(s,sd+8);
 strcat(s," ");
 strncpy(s0,sd+5,2); s0[2]=0;
@@ -239,11 +236,11 @@ void first(struct z* Kompan, int NC)
 		Console::CursorLeft=10;
 		Console::CursorTop=15;
 		SetConsoleCP(866);
-		printf("Самое \"старое\" показание с компании %s. Цена была %ld$ за акцию",
+		printf("РЎР°РјРѕРµ \"СЃС‚Р°СЂРѕРµ\" РїРѕРєР°Р·Р°РЅРёРµ СЃ РєРѕРјРїР°РЅРёРё %s. Р¦РµРЅР° Р±С‹Р»Р° %ld$ Р·Р° Р°РєС†РёСЋ",
 		best->name,best->price_akcii);
 		Console::CursorLeft=10;
 		Console::CursorTop=16;
-		printf("Страна компании %s цена компании %ld %s",best->country,best->price_komp,best->size1);
+		printf("РЎС‚СЂР°РЅР° РєРѕРјРїР°РЅРёРё %s С†РµРЅР° РєРѕРјРїР°РЅРёРё %ld %s",best->country,best->price_komp,best->size1);
 	getch();
 }
 
@@ -254,7 +251,7 @@ char CONTRY[30];
 Console::ForegroundColor=ConsoleColor::Green;
 Console::BackgroundColor=ConsoleColor::Black;
 Console::Clear();
-printf("Введите название страны: ");
+printf("Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ СЃС‚СЂР°РЅС‹: ");
 SetConsoleCP(1251);
 gets(CONTRY);
 SetConsoleCP(866);
@@ -268,13 +265,13 @@ Console::ForegroundColor=ConsoleColor::Black;
 Console::BackgroundColor=ConsoleColor::Green;
 Console::CursorLeft=10;
 Console::CursorTop=15;
-printf("Акции %s",CONTRY);
+printf("РђРєС†РёРё %s",CONTRY);
 Console::CursorLeft=10;
 Console::CursorTop=17;
-printf("Всего: %d",k);
+printf("Р’СЃРµРіРѕ: %d",k);
 Console::CursorLeft=10;
 Console::CursorTop=19;
-printf("Список:");
+printf("РЎРїРёСЃРѕРє:");
 for(i=0;i<NC;i++)
 	if (strcmp(Kompan[i].country,CONTRY)==0)
 	{
@@ -285,22 +282,22 @@ for(i=0;i<NC;i++)
 getch();
 }
 
-
+/**
 void find_action(struct sp* nt)
 {
 char findName[40];
-printf("\n\t Введите название компании, акции которой нужно найти \n\t");
+printf("\n\t Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ РєРѕРјРїР°РЅРёРё, Р°РєС†РёРё РєРѕС‚РѕСЂРѕР№ РЅСѓР¶РЅРѕ РЅР°Р№С‚Рё \n\t");
 SetConsoleCP(1251);
 gets(findName);
 SetConsoleCP(866);
 for(nt=spisok; nt!=0 && strcmp(nt->name,findName); nt=nt->sled);
 if (nt!=0)
 {
-	printf("\n\t Да, такая компания есть: %s", nt->name);
+	printf("\n\t Р”Р°, С‚Р°РєР°СЏ РєРѕРјРїР°РЅРёСЏ РµСЃС‚СЊ: %s", nt->name);
 }
 else
 {
-	printf("\n\t Нет такой");
+	printf("\n\t РќРµС‚ С‚Р°РєРѕР№");
 }
 }
 
@@ -308,7 +305,7 @@ void delete_element(struct sp* nt)
 {
 char kompName[40];
 char flag[40];
-printf("\n\t Введите название компании, акции которой нужно удалить из списка \n\t");
+printf("\n\t Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ РєРѕРјРїР°РЅРёРё, Р°РєС†РёРё РєРѕС‚РѕСЂРѕР№ РЅСѓР¶РЅРѕ СѓРґР°Р»РёС‚СЊ РёР· СЃРїРёСЃРєР° \n\t");
 SetConsoleCP(1251);
 gets(kompName);
 SetConsoleCP(866);
@@ -317,7 +314,7 @@ Console::ForegroundColor=ConsoleColor::Green;
 Console::BackgroundColor=ConsoleColor::Gray;
 Console::Clear();
 
-printf("\n\t Обновлённый список \n\t");
+printf("\n\t РћР±РЅРѕРІР»С‘РЅРЅС‹Р№ СЃРїРёСЃРѕРє \n\t");
 
 for(nt=spisok; nt!=0; nt=nt->sled)
 {
@@ -336,7 +333,7 @@ if(nt)
 }
 else
 {
-	printf("Элемент не обнаружен!");
+	printf("Р­Р»РµРјРµРЅС‚ РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅ!");
 	getch();
 	exit(0);
 }
@@ -346,7 +343,9 @@ for(nt=spisok; nt!=0; nt=nt->sled)
 printf("\n\t%-30s %ld",nt->name,nt->summa);
 
 }
-void alfalist(struct z* Kompan, int NC)
+
+**/
+void alfalist(struct z* Kompan, int NC, struct sp** spisok)
 {
 int i,n;
 struct sp *nt, *mt;
@@ -354,16 +353,16 @@ n = NC;
 Console::ForegroundColor=ConsoleColor::Green;
 Console::BackgroundColor=ConsoleColor::Gray;
 Console::Clear();
-if(!spisok)
+if(!*spisok)
 for(i=0;i<NC;i++)
-vstavka(Kompan[i].name,Kompan[i].price_akcii);
-printf("\n\t Алфавитный список акций последней сводки");
+vstavka(Kompan,Kompan[i].name, NC, spisok);
+printf("\n\t РђР»С„Р°РІРёС‚РЅС‹Р№ СЃРїРёСЃРѕРє Р°РєС†РёР№ РїРѕСЃР»РµРґРЅРµР№ СЃРІРѕРґРєРё");
 /**printf("\n ===============================\n");**/
-printf("\t\tОбратный алфавитный список акций последней сводки");
+printf("\t\tРћР±СЂР°С‚РЅС‹Р№ Р°Р»С„Р°РІРёС‚РЅС‹Р№ СЃРїРёСЃРѕРє Р°РєС†РёР№ РїРѕСЃР»РµРґРЅРµР№ СЃРІРѕРґРєРё");
 /**printf("\t \t \t \t ===============================\n");**/
-for(nt=spisok; nt!=0; nt=nt->sled)
+for(nt=*spisok; nt!=0; nt=nt->sled)
 printf("\n\t%-30s %ld",nt->name,nt->summa);
-for (nt=spisok, mt=0; nt!=0; mt=nt, nt = nt->sled);
+for (nt=*spisok, mt=0; nt!=0; mt=nt, nt = nt->sled);
 
 Console::CursorTop=2;
 for (nt=mt,i=0;nt!=0; i++, nt=nt->pred)
@@ -385,41 +384,30 @@ getch();**/
 
 
 }
-void vstavka(char* name, int summa)
+void vstavka(struct z* Kompan,char* name, int NC, struct sp** spisok)
 {
+	int i;
 	struct sp *nov,*nt,*z=0;
-	for(nt=spisok; nt!=0 && strcmp(nt->name,name)<0; z=nt, nt=nt->sled);
+	for(nt=*spisok; nt!=0 && strcmp(nt->name,name)<0; z=nt, nt=nt->sled);
 	if(nt && strcmp(nt->name,name)==0) return;
 	nov=(struct sp *) malloc(sizeof(struct sp));
 	strcpy(nov->name,name);
-	nov->summa=summa;
 	nov->pred=z;
 	nov->sled=nt;
-	if(!z) spisok=nov;
-	else z->sled=nov;
-	if(nt) nt->pred=nov;
-	return;
-}
-void vstavka2(struct z* Kompan,char* name, int NC)
-{
-	int i;
-	struct sp2 *nov2,*nt2,*z2=0;
-	for(nt2=spisok2; nt2!=0 && strcmp(nt2->name,name)<0; z2=nt2, nt2=nt2->sled);
-	if(nt2 && strcmp(nt2->name,name)==0) return;
-	nov2=(struct sp2 *) malloc(sizeof(struct sp2));
-	strcpy(nov2->name,name);
-	nov2->sled=nt2;
-	nov2->summa=0;
+	nov->summa=0;
 	for(i=0;i<NC;i++)
 	if(strcmp(Kompan[i].name,name)==0)
-	nov2->summa+=Kompan[i].price_akcii;
-	if(!z2) spisok2=nov2;
-	else z2->sled=nov2;
+	nov->summa+=Kompan[i].price_akcii;
+	if (!z) *spisok=nov;
+	if (nt) nt->pred=nov;
+	if (z) z->sled=nov;
 	return;
 }
-void diagram(struct z *Kompan, int NC)
+
+void diagram(struct z *Kompan, int NC, struct sp** spisok)
 {
-	struct sp2 *nt;
+	struct sp *nt;
+
 	int len,i,NColor;
 	long sum = 0 ;
 	char str1[40];
@@ -431,11 +419,11 @@ void diagram(struct z *Kompan, int NC)
 	Console::Clear();
 
 	for(i=0;i<NC;i++) sum = sum+Kompan[i].price_akcii;
-	if(!spisok2)
+	if(!*spisok)
 	for(i=0;i<NC;i++)
-	vstavka2(Kompan,Kompan[i].name, NC);
+	vstavka(Kompan,Kompan[i].name, NC, spisok);
 	Color=ConsoleColor::Black; NColor=0;
-	for(nt=spisok2,i=0; nt!=0; nt=nt->sled,i++)
+	for(nt=*spisok,i=0; nt!=0; nt=nt->sled,i++)
 	{
 		sprintf(str1,"%s",nt->name);
 		sprintf(str2,"%3.2f%%",(nt->summa*100./sum));
@@ -464,17 +452,17 @@ int porog;
 Console::ForegroundColor=ConsoleColor::Green;
 Console::BackgroundColor=ConsoleColor::Black;
 Console::Clear();
-printf("Введите название страны: ");
+printf("Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ СЃС‚СЂР°РЅС‹: ");
 SetConsoleCP(1251);
 gets(CONTRY);
 SetConsoleCP(866);
-printf("Введите больше какой суммы: ");
+printf("Р’РІРµРґРёС‚Рµ Р±РѕР»СЊС€Рµ РєР°РєРѕР№ СЃСѓРјРјС‹: ");
 scanf("%ld",&porog);
 
 Console::ForegroundColor=ConsoleColor::Green;
 Console::BackgroundColor=ConsoleColor::Gray;
 Console::Clear();
-printf("\n\r Список акций %s, стоимость которых выше %ld$",&CONTRY,porog);
+printf("\n\r РЎРїРёСЃРѕРє Р°РєС†РёР№ %s, СЃС‚РѕРёРјРѕСЃС‚СЊ РєРѕС‚РѕСЂС‹С… РІС‹С€Рµ %ld$",&CONTRY,porog);
 printf("\n\r ===================================================== \n\r");
 for(i=0,nt=Kompan;i<NC;nt++,i++)
 if (nt->price_akcii>porog && strcmp(nt->country,CONTRY)==0)
@@ -496,8 +484,8 @@ void hard_question(struct z* Kompan, int NC)
 		{
 			if (Kompan[i].price_akcii == Kompan[j].price_akcii)
 			{
-			printf("\nСтоимость акций компании %s страны %s равна стоимости акций компании %s страны %s",Kompan[i].name,Kompan[i].country,Kompan[j].name, Kompan[j].country);
-			printf("\nЦена %ld \n", Kompan[i].price_akcii);
+			printf("\nРЎС‚РѕРёРјРѕСЃС‚СЊ Р°РєС†РёР№ РєРѕРјРїР°РЅРёРё %s СЃС‚СЂР°РЅС‹ %s СЂР°РІРЅР° СЃС‚РѕРёРјРѕСЃС‚Рё Р°РєС†РёР№ РєРѕРјРїР°РЅРёРё %s СЃС‚СЂР°РЅС‹ %s",Kompan[i].name,Kompan[i].country,Kompan[j].name, Kompan[j].country);
+			printf("\nР¦РµРЅР° %ld \n", Kompan[i].price_akcii);
 			flag = 1;
 			break;
 			}
@@ -505,6 +493,6 @@ void hard_question(struct z* Kompan, int NC)
 		if (flag == 1) {break;}
 	}
 	if (flag == 0)
-	{printf("Совпадений нет");}
+	{printf("РЎРѕРІРїР°РґРµРЅРёР№ РЅРµС‚");}
 	getch();
 }
